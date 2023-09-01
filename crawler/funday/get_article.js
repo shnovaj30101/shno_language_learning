@@ -87,9 +87,9 @@ const main = async (args) => {
             }
 
             article_id -= 1;
+            await sleep(3000);
         }
 
-        await sleep(3000);
     } catch (err) {
         console.log(err.stack);
         process.exit(-1);
