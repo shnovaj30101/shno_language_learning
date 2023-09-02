@@ -292,4 +292,5 @@ dist
 
 
 crawler/funday/cookie.txt
-crawler/funday/article_file
+crawler/funday/article_file*
+crawler/funday/incr_file*
