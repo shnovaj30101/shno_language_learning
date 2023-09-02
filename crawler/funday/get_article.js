@@ -104,6 +104,8 @@ const page_setting = async (browser, args) => {
         width: 1920,
         height: 1080
     })
+
+    return page;
 }
 
 const main = async (args) => {
@@ -150,7 +152,7 @@ const main = async (args) => {
 };
 
 const incre_mode_main = async (args) => {
-    let article_file_info = read_json_line_file(args.article_file);
+    let article_file_info = await read_json_line_file(args.article_file);
     const browser = await puppeteer.launch({headless:args.headless});
 
     try {
@@ -159,7 +161,7 @@ const incre_mode_main = async (args) => {
 
         while (article_id >= args.end_id && article_id > 0) {
             try {
-                if (!(article_id in article_file_info) || article_file_info[article_id].parse_error) {
+                if (!(article_id.toString() in article_file_info) || article_file_info[article_id.toString()].parse_error) {
                     let url = `https://funday.asia/learning2020/?rid=${article_id}`;
                     await page.goto(url);
 
@@ -167,12 +169,12 @@ const incre_mode_main = async (args) => {
 
                     if (desc.trim().length > 0) {
                         let output_json = await parse_content(page, args, article_id);
-                        fs.appendFileSync(args.incre_file, JSON.stringify(output_json) + '\n');
+                        fs.appendFileSync(args.incr_file, JSON.stringify(output_json) + '\n');
                     } else {
                         let output_json = {};
                         output_json.article_id = article_id;
                         output_json.page_not_found = true;
-                        fs.appendFileSync(args.article_file, JSON.stringify(output_json) + '\n');
+                        fs.appendFileSync(args.incr_file, JSON.stringify(output_json) + '\n');
                     }
                     await sleep(3000);
                 }
@@ -196,16 +198,16 @@ const incre_mode_main = async (args) => {
 }
 
 const merge_mode_main = async (args) => {
-    let article_file_info = read_json_line_file(args.article_file);
-    let incre_file_info = read_json_line_file(args.incre_file);
+    let article_file_info = await read_json_line_file(args.article_file);
+    let incre_file_info = await read_json_line_file(args.incr_file);
 
     let article_id = args.start_id;
 
     while (article_id >= args.end_id && article_id > 0) {
-        if (article_id in article_file_info && !article_file_info[article_id].parse_error) {
-            fs.appendFileSync(args.article_file, JSON.stringify(article_file_info[article_id]) + '\n');
-        } else if (article_id in incre_file_info && !incre_file_info[article_id].parse_error) {
-            fs.appendFileSync(args.incre_file, JSON.stringify(incre_file_info[article_id]) + '\n');
+        if (article_id.toString() in article_file_info && !article_file_info[article_id.toString()].parse_error) {
+            fs.appendFileSync(args.article_file, JSON.stringify(article_file_info[article_id.toString()]) + '\n');
+        } else if (article_id.toString() in incre_file_info && !incre_file_info[article_id.toString()].parse_error) {
+            fs.appendFileSync(args.incr_file, JSON.stringify(incre_file_info[article_id.toString()]) + '\n');
         }
 
         article_id -= 1;
@@ -245,28 +247,28 @@ const merge_mode_main = async (args) => {
         }
     );
 
-    if (!isDirExist(args.mp3_dir)) {
-        fs.mkdirSync(args.mp3_dir);
+    if (!isDirExist(_args.mp3_dir)) {
+        fs.mkdirSync(_args.mp3_dir);
     }
 
-    if (args.incre_mode) {
-        if (isFileExist(args.incr_file)) {
-            console.log("need use merge_mode or rename your incre_file.");
+    if (_args.incre_mode) {
+        if (isFileExist(_args.incr_file)) {
+            console.log("need use merge_mode or rename your incr_file.");
             process.exit(-1);
         }
         await incre_mode_main(_args);
-    } else if (args.merge_mode) {
-        if (!isFileExist(args.article_file)) {
+    } else if (_args.merge_mode) {
+        if (!isFileExist(_args.article_file)) {
             console.log("article_file not exist");
             process.exit(-1);
         }
-        if (!isFileExist(args.incre_file)) {
-            console.log("incre_file not exist");
+        if (!isFileExist(_args.incr_file)) {
+            console.log("incr_file not exist");
             process.exit(-1);
         }
         await merge_mode_main(_args);
     } else {
-        if (isFileExist(args.article_file)) {
+        if (isFileExist(_args.article_file)) {
             console.log("need use incre_mode or rename your artcile_file.");
             process.exit(-1);
         }
