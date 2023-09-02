@@ -61,7 +61,6 @@ const parse_content = async (page, args, article_id) => {
         output_json.trans_title = trans_content_list[0];
         output_json.trans_article = trans_content_list.slice(1).join('\n');
 
-        fs.appendFileSync(args.article_file, JSON.stringify(output_json) + '\n');
     } catch (err) {
         output_json.article_id = article_id;
         output_json.parse_error = true;
