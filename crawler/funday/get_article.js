@@ -1,6 +1,7 @@
 const puppeteer = require('puppeteer');
 const LineByLineReader = require('line-by-line');
 const fs = require('fs');
+const moment = require('moment');
 
 const sleep = (ms) => {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -199,19 +200,22 @@ const incre_mode_main = async (args) => {
 
 const merge_mode_main = async (args) => {
     let article_file_info = await read_json_line_file(args.article_file);
-    let incre_file_info = await read_json_line_file(args.incr_file);
+    let incr_file_info = await read_json_line_file(args.incr_file);
 
     let article_id = args.start_id;
 
     while (article_id >= args.end_id && article_id > 0) {
         if (article_id.toString() in article_file_info && !article_file_info[article_id.toString()].parse_error) {
-            fs.appendFileSync(args.article_file, JSON.stringify(article_file_info[article_id.toString()]) + '\n');
-        } else if (article_id.toString() in incre_file_info && !incre_file_info[article_id.toString()].parse_error) {
-            fs.appendFileSync(args.incr_file, JSON.stringify(incre_file_info[article_id.toString()]) + '\n');
+            fs.appendFileSync("tmp_merge", JSON.stringify(article_file_info[article_id.toString()]) + '\n');
+        } else if (article_id.toString() in incr_file_info) {
+            fs.appendFileSync("tmp_merge", JSON.stringify(incr_file_info[article_id.toString()]) + '\n');
         }
 
         article_id -= 1;
     }
+    fs.renameSync(args.article_file, `${args.article_file}_${moment().format('YYYYMMDD_HHmmss')}` );
+    fs.renameSync(args.incr_file, `${args.incr_file}_${moment().format('YYYYMMDD_HHmmss')}` );
+    fs.renameSync("tmp_merge", args.article_file);
 }
 
 (async () => {
